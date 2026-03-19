@@ -5,7 +5,7 @@
 import socket
 
 serversocket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-serversocket.bind(('172.20.10.3', 8089))
+serversocket.bind(('localhost', 6008))
 serversocket.listen(5) # become a server socket, maximum 5 connections
 
 while True:
