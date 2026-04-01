@@ -1,4 +1,5 @@
-from random import randint
+import random
+import base64
 
 MODULE = 2**256
 GENERATOR = 3
@@ -13,7 +14,7 @@ def textToNumber(text: str):
 def numberToText(number: int):
     return number.to_bytes(32).decode('utf-8')
 
-def exponentiationModulaire(n: int, k: int, module: int):
+def exponentiationModulaire(n: int, k: int, module: int) -> int:
     if (k == 0):
         return 1
     if (k & 1 == 1):
@@ -22,7 +23,7 @@ def exponentiationModulaire(n: int, k: int, module: int):
         return exponentiationModulaire((n * n) % module, k // 2, module) % module
 
 def generateKeyPair():
-    x = randint(1, MODULE - 1)
+    x = random.randint(1, MODULE - 1)
     h = exponentiationModulaire(3, x, MODULE)
     publicKey = h
     privateKey = x
@@ -30,7 +31,7 @@ def generateKeyPair():
 
 # message: entier dans [0, MODULE[
 def encrypt(message, publicKey):
-    y = randint(1, MODULE - 1)
+    y = random.randint(1, MODULE - 1)
     s = exponentiationModulaire(publicKey,y,MODULE)
     c1 = exponentiationModulaire(GENERATOR, y, MODULE)
     c2 = (message * s) % MODULE
@@ -43,17 +44,11 @@ def decrypt(ciphertext, privateKey):
     message = (c2 * sInv) % MODULE
     return message
 
-# Key generation (Alice)
-publicKey, privateKey = generateKeyPair()
-print("publicKey:", publicKey)
-print("privateKey:", privateKey)
+def writeKeyToFile(key: int, filename: str):
+    with open(filename, 'wb') as file:
+        file.write(base64.b64encode(key.to_bytes(32)))
 
-# Encryption (Bob)
-m = textToNumber("Hello, world !")
-ciphertext = encrypt(m, publicKey)
-print("ciphertext:", ciphertext)
-
-# Decryption (Alice)
-message = decrypt(ciphertext, privateKey)
-print(numberToText(message))
-
+def readKeyFromFile(filename: str):
+    with open(filename, 'rb') as file:
+        return int.from_bytes(base64.b64decode(file.read()))
+        

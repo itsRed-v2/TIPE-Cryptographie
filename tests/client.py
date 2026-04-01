@@ -5,5 +5,5 @@
 import socket
 
 clientsocket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-clientsocket.connect(('localhost', 6008))
+clientsocket.connect(('172.20.30.5', 6008))
 clientsocket.send('hello'.encode("utf-8"))
