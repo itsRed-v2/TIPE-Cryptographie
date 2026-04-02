@@ -1,4 +1,8 @@
+# Python cache
 __pycache__/
 
-private.key
-public.key
+# VS Code configuration files
+.vscode/
+
+# Key files
+*.key

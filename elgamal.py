@@ -39,9 +39,9 @@ def exponentiationModulaireRecursive(n: int, k: int, module: int, depth = 0):
     if k == 1:
         return n
     if (k & 1 == 1):
-        return (n * exponentiationModulaire((n * n), (k-1) // 2, module, depth + 1)) % module
+        return (n * exponentiationModulaireRecursive((n * n), (k-1) // 2, module, depth + 1)) % module
     else:
-        return exponentiationModulaire((n * n) % module, k // 2, module, depth + 1) % module
+        return exponentiationModulaireRecursive((n * n) % module, k // 2, module, depth + 1) % module
 
 def generateKeyPair(keySize: int):
     module = 2**(8 * keySize)
@@ -52,7 +52,7 @@ def generateKeyPair(keySize: int):
     return publicKey, privateKey
 
 # message: entier dans [0, MODULE[
-def encrypt(message: int, publicKey: int, keySize: int):
+def encrypt(message: int, publicKey: int, keySize: int) -> tuple[int, int]:
     module = 2**(8 * keySize)
 
     y = random.randint(1, module - 1)
@@ -62,7 +62,7 @@ def encrypt(message: int, publicKey: int, keySize: int):
     ciphertext = (c1, c2)
     return ciphertext
 
-def decrypt(ciphertext: int, privateKey: int, keySize: int):
+def decrypt(ciphertext: tuple[int, int], privateKey: int, keySize: int):
     module = 2**(8 * keySize)
 
     c1, c2 = ciphertext
@@ -71,12 +71,16 @@ def decrypt(ciphertext: int, privateKey: int, keySize: int):
     return message
 
 def writeKeyToFile(key: int, filename: str, keySize: int):
-    with open(filename, 'wb') as file:
-        file.write(base64.b64encode(key.to_bytes(keySize)))
+    with open(filename, 'w') as file:
+        keyString = base64.b64encode(key.to_bytes(keySize)).decode('ascii')
+        lines = [keyString[i:i+64] for i in range(0, len(keyString), 64)]
+        file.write("\n".join(lines))
 
 def readKeyFromFile(filename: str, keySize: int):
-    with open(filename, 'rb') as file:
-        key = int.from_bytes(base64.b64decode(file.read()))
-        assert len(key) == keySize
-        return key
+    with open(filename, 'r') as file:
+        lines = [l.strip() for l in file.readlines()]
+        keyString = "".join(lines)
+        keyBytes = base64.b64decode(keyString)
+        assert len(keyBytes) == keySize and "Key size in file does not match expected size"
+        return int.from_bytes(keyBytes)
         
