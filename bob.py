@@ -1,7 +1,9 @@
-from elgamal import generateKeyPair, textToNumber, encrypt, decrypt, numberToText
+from elgamal import generateKeyPair, textToNumber, encrypt, decrypt, numberToText, exponentiationModulaireIteratif, exponentiationModulaireRecursive
 import base64
 from matplotlib import pyplot as plt
 import time
+import random
+import numpy as np
 
 def measure(nom: str, func):
     start = time.time()
@@ -31,17 +33,23 @@ def bob(keySize: int):
 
 def plotGenerate():
     sizes = []
-    times = []
-    square = []
-    cube = []
-    for keySize in range(32, 256, 4):
+    timesIteratif = []
+    timesRecursif = []
+    for keySize in range(32, 513, 16):
+        module = 2**(8 * keySize)
+        x = random.randint(1, module - 1)
+
         sizes.append(keySize)
-        times.append(measure("genration de clé", lambda: generateKeyPair(keySize)))
-        square.append(0.000001 * keySize * keySize)
-        cube.append(0.0000000045 * keySize ** 3)
-    plt.plot(sizes, times, "+", label = "mesure")
-    plt.plot(sizes, square, "-r", label = "x²")
-    plt.plot(sizes, cube, "-g", label = "x³")
+        timesIteratif.append(measure(f"Iteratif {keySize}", lambda: exponentiationModulaireIteratif(3, x, module)))
+        timesRecursif.append(measure(f"Recursif {keySize}", lambda: exponentiationModulaireRecursive(3, x, module)))
+    
+    # a, b = np.polynomial.polynomial.polyfit(sizes.copy(), timesIteratif.copy(), 1)
+    # x = np.linspace(32, 512, 100)
+    # reg = a*x + b
+
+    plt.plot(sizes, timesIteratif, "+", label = "Itératif")
+    plt.plot(sizes, timesRecursif, "+", label = "Recursif")
+    # plt.plot(x, reg, "-", label = "Régression")
     plt.xlabel("keySize (bytes)")
     plt.ylabel("temps (s)")
     plt.legend(); plt.grid(); plt.show()

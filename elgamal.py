@@ -1,5 +1,7 @@
 import random
 import base64
+import sys
+sys.setrecursionlimit(10000)
 
 # KEY_SIZE = 1024
 
@@ -16,32 +18,32 @@ def numberToText(number: int, keySize):
     return number.to_bytes(keySize).decode('utf-8')
 
 def exponentiationModulaireIteratif(n: int, k: int, module: int) -> int:
-    # VERSION WIKIPEDIA à RÉÉCRIRE
     if k == 0:
         return 1
-    y = 1
+    
+    acc = 1    
     while k > 1:
-        # print("k:", k)
         if k & 1 == 1:
-            y = (n * y) % module
-            k -= 1
-        n = (n * n) % module
+            acc = (acc * n) % module
+            k = k-1
+        n = (n*n) % module
         k //= 2
-    return (n * y) % module
+
+    return (n * acc) % module
 
 def exponentiationModulaire(n: int, k: int, module: int) -> int:
-    return exponentiationModulaireIteratif(n, k, module)
+    return exponentiationModulaireRecursive(n, k, module)
 
 def exponentiationModulaireRecursive(n: int, k: int, module: int, depth = 0):
-    print("depth", depth)
+    # print("depth", depth)
     if k == 0:
         return 1
     if k == 1:
         return n
     if (k & 1 == 1):
-        return (n * exponentiationModulaireRecursive((n * n), (k-1) // 2, module, depth + 1)) % module
+        return (n * exponentiationModulaireRecursive((n * n) % module, (k-1) // 2, module, depth + 1)) % module
     else:
-        return exponentiationModulaireRecursive((n * n) % module, k // 2, module, depth + 1) % module
+        return exponentiationModulaireRecursive((n * n) % module, k // 2, module, depth + 1)
 
 def generateKeyPair(keySize: int):
     module = 2**(8 * keySize)
