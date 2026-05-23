@@ -10,7 +10,7 @@ def measure(nom: str, func):
     func()
     end = time.time()
     elapsed = end - start
-    print(f"'{nom}': {elapsed:.3f}")
+    print(f"'{nom}': {elapsed:.6f}")
     return elapsed
 
 def printb64(msg: str, key: int, keySize: int):
@@ -35,21 +35,27 @@ def plotGenerate():
     sizes = []
     timesIteratif = []
     timesRecursif = []
-    for keySize in range(32, 513, 16):
+    for keySize in range(32, 1000048, 2560):
         module = 2**(8 * keySize)
         x = random.randint(1, module - 1)
 
         sizes.append(keySize)
-        timesIteratif.append(measure(f"Iteratif {keySize}", lambda: exponentiationModulaireIteratif(3, x, module)))
-        timesRecursif.append(measure(f"Recursif {keySize}", lambda: exponentiationModulaireRecursive(3, x, module)))
+        timesIteratif.append(measure(f"Decrement {keySize}", lambda: x > 1))
+        timesRecursif.append(measure(f"Decrement {keySize}", lambda: x == 1))
     
-    # a, b = np.polynomial.polynomial.polyfit(sizes.copy(), timesIteratif.copy(), 1)
-    # x = np.linspace(32, 512, 100)
-    # reg = a*x + b
+        # timesIteratif.append(measure(f"Iteratif {keySize}", lambda: exponentiationModulaireIteratif(3, x, module)))
+        # timesRecursif.append(measure(f"Recursif {keySize}", lambda: exponentiationModulaireRecursive(3, x, module)))
+    
+    # print(sizes)
+    # output = np.polynomial.polynomial.Polynomial.fit(sizes[:20], timesIteratif[:20], 3)
+    # print(output)
+    # print(output.convert().coef)
+
+    # x, y = output.linspace(100, [32, 400])
 
     plt.plot(sizes, timesIteratif, "+", label = "Itératif")
     plt.plot(sizes, timesRecursif, "+", label = "Recursif")
-    # plt.plot(x, reg, "-", label = "Régression")
+    # plt.plot(x, y, "-", label = "Régression")
     plt.xlabel("keySize (bytes)")
     plt.ylabel("temps (s)")
     plt.legend(); plt.grid(); plt.show()

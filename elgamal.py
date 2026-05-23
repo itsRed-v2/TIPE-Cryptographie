@@ -27,7 +27,7 @@ def exponentiationModulaireIteratif(n: int, k: int, module: int) -> int:
             acc = (acc * n) % module
             k = k-1
         n = (n*n) % module
-        k //= 2
+        k >>= 1 # Dixvise par 2
 
     return (n * acc) % module
 
