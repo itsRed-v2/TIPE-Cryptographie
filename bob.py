@@ -1,17 +1,5 @@
-from elgamal import generateKeyPair, textToNumber, encrypt, decrypt, numberToText, exponentiationModulaireIteratif, exponentiationModulaireRecursive
+from elgamal import generateKeyPair, textToNumber, encrypt, decrypt, numberToText
 import base64
-from matplotlib import pyplot as plt
-import time
-import random
-import numpy as np
-
-def measure(nom: str, func):
-    start = time.time()
-    func()
-    end = time.time()
-    elapsed = end - start
-    print(f"'{nom}': {elapsed:.6f}")
-    return elapsed
 
 def printb64(msg: str, key: int, keySize: int):
     print(msg, base64.b64encode(key.to_bytes(keySize)).decode('utf-8'))
@@ -30,34 +18,3 @@ def bob(keySize: int):
     # Decryption (Alice)
     message = decrypt(ciphertext, privateKey, keySize)
     print(numberToText(message, keySize))
-
-def plotGenerate():
-    sizes = []
-    timesIteratif = []
-    timesRecursif = []
-    for keySize in range(32, 1000048, 2560):
-        module = 2**(8 * keySize)
-        x = random.randint(1, module - 1)
-
-        sizes.append(keySize)
-        timesIteratif.append(measure(f"Decrement {keySize}", lambda: x > 1))
-        timesRecursif.append(measure(f"Decrement {keySize}", lambda: x == 1))
-    
-        # timesIteratif.append(measure(f"Iteratif {keySize}", lambda: exponentiationModulaireIteratif(3, x, module)))
-        # timesRecursif.append(measure(f"Recursif {keySize}", lambda: exponentiationModulaireRecursive(3, x, module)))
-    
-    # print(sizes)
-    # output = np.polynomial.polynomial.Polynomial.fit(sizes[:20], timesIteratif[:20], 3)
-    # print(output)
-    # print(output.convert().coef)
-
-    # x, y = output.linspace(100, [32, 400])
-
-    plt.plot(sizes, timesIteratif, "+", label = "Itératif")
-    plt.plot(sizes, timesRecursif, "+", label = "Recursif")
-    # plt.plot(x, y, "-", label = "Régression")
-    plt.xlabel("keySize (bytes)")
-    plt.ylabel("temps (s)")
-    plt.legend(); plt.grid(); plt.show()
-
-plotGenerate()

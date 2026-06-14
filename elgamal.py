@@ -17,7 +17,7 @@ def textToNumber(text: str, keySize: int):
 def numberToText(number: int, keySize):
     return number.to_bytes(keySize).decode('utf-8')
 
-def exponentiationModulaireIteratif(n: int, k: int, module: int) -> int:
+def exponentiationModulaireIterative(n: int, k: int, module: int) -> int:
     if k == 0:
         return 1
     
@@ -32,7 +32,7 @@ def exponentiationModulaireIteratif(n: int, k: int, module: int) -> int:
     return (n * acc) % module
 
 def exponentiationModulaire(n: int, k: int, module: int) -> int:
-    return exponentiationModulaireRecursive(n, k, module)
+    return exponentiationModulaireIterative(n, k, module)
 
 def exponentiationModulaireRecursive(n: int, k: int, module: int, depth = 0):
     # print("depth", depth)
@@ -44,6 +44,16 @@ def exponentiationModulaireRecursive(n: int, k: int, module: int, depth = 0):
         return (n * exponentiationModulaireRecursive((n * n) % module, (k-1) // 2, module, depth + 1)) % module
     else:
         return exponentiationModulaireRecursive((n * n) % module, k // 2, module, depth + 1)
+
+def exponentiationModulaireRecursiveBuggée(n: int, k: int, module: int, depth = 0):
+    if k == 0:
+        return 1
+    if k == 1:
+        return n
+    if (k & 1 == 1):
+        return (n * exponentiationModulaireRecursiveBuggée((n * n), (k-1) // 2, module, depth + 1)) % module
+    else:
+        return exponentiationModulaireRecursiveBuggée((n * n) % module, k // 2, module, depth + 1) % module
 
 def generateKeyPair(keySize: int):
     module = 2**(8 * keySize)
