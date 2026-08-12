@@ -95,4 +95,4 @@ def readKeyFromFile(filename: str, keySize: int):
         keyBytes = base64.b64decode(keyString)
         assert len(keyBytes) == keySize and "Key size in file does not match expected size"
         return int.from_bytes(keyBytes)
-        
+
