@@ -10,9 +10,7 @@ import signal
 # === CONSTANTS ===
 # =================
 
-HOST_ADDRESS = ('localhost', 6008)
-REMOTE_ADDRESS = ('localhost', 6008)
-
+HOST_PORT = 6008
 KEY_SIZE = 256
 
 hostPrivateKey = readKeyFromFile("hostPrivate.key", KEY_SIZE)
@@ -38,6 +36,14 @@ class PacketType(Enum):
     def byte(self):
         return self.value.to_bytes(1)
 
+def get_ip():
+    s = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
+    # doesn't even have to be reachable
+    s.connect(('10.254.254.254', 1))
+    IP = s.getsockname()[0]
+    s.close()
+    return IP
+
 def send_message(sock: socket.socket, message: str):
     if remotePublicKey == None or remoteKeySize == None:
         print("Error: Cannot send message to peer, public key not yet received.")
@@ -61,17 +67,20 @@ def read_stdin(connection: socket.socket):
         send_message(connection, msg)
 
 def listen_for_peers():
+    HOST_IP = get_ip()
+
     serverSocket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-    serverSocket.bind(HOST_ADDRESS)
+    serverSocket.bind((HOST_IP, HOST_PORT))
     serverSocket.listen() # become a server socket, maximum 5 connections
-    print("Listening for incoming connections...")
+    print(f"Listening for incoming connections on local network at {HOST_IP}:{HOST_PORT}")
+
     connection, address = serverSocket.accept()
     print(f"Received connection from {address}.")
     start_communicating(connection)
 
-def connect_to_peer():
-    connection = socket.create_connection(REMOTE_ADDRESS)
-    print(f"Engaged connection with peer {REMOTE_ADDRESS}")
+def connect_to_peer(ip: str, port: int):
+    connection = socket.create_connection((ip, port))
+    print(f"Engaged connection with peer {ip}:{port}")
     start_communicating(connection)
 
 def start_communicating(connection: socket.socket):
@@ -114,18 +123,30 @@ def sigint_handler(_sig, _frame):
     print("Exiting.")
     os._exit(0)
 
+def print_help():
+    print("Syntax:")
+    print(sys.argv[0], "listen")
+    print(sys.argv[0], "connect ip:port")
+
 # ===================
 # === ACTUAL CODE ===
 # ===================
 
 signal.signal(signal.SIGINT, sigint_handler)
 
-assert len(sys.argv) == 2
-
+if len(sys.argv) == 1:
+    print_help()
 if sys.argv[1] == "listen":
     listen_for_peers()
 elif sys.argv[1] == "connect":
-    connect_to_peer()
+    try:
+        addr_str = sys.argv[2]
+        [ip,port] = addr_str.split(":")
+        port = int(port)
+    except:
+        print_help()
+    else:
+        connect_to_peer(ip,port)
 else:
-    print(f"Unknown argument: {sys.argv[1]}")
+    print_help()
 
