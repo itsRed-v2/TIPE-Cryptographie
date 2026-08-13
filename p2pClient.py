@@ -16,13 +16,6 @@ KEY_SIZE = 256
 hostPrivateKey = readKeyFromFile("hostPrivate.key", KEY_SIZE)
 hostPublicKey = readKeyFromFile("hostPublic.key", KEY_SIZE)
 
-# ========================
-# === GLOBAL VARIABLES ===
-# ========================
-
-remotePublicKey: int | None = None;
-remoteKeySize: int | None = None;
-
 # =====================================
 # === CLASS AND FUNCTION DEFINITION ===
 # =====================================
@@ -44,13 +37,10 @@ def get_ip():
     s.close()
     return IP
 
-def send_message(sock: socket.socket, message: str):
-    if remotePublicKey == None or remoteKeySize == None:
-        print("Error: Cannot send message to peer, public key not yet received.")
-        return
-
+def send_message(sock: socket.socket, message: str, remotePublicKey: bytes):
+    remoteKeySize = len(remotePublicKey)
     msgNumber = textToNumber(message, remoteKeySize)
-    c1, c2 = encrypt(msgNumber, remotePublicKey, remoteKeySize)
+    c1, c2 = encrypt(msgNumber, int.from_bytes(remotePublicKey), remoteKeySize)
     content = c1.to_bytes(remoteKeySize) + c2.to_bytes(remoteKeySize)
     length = len(content)
     packet = length.to_bytes(2) + PacketType.MESSAGE.byte() + content
@@ -61,17 +51,17 @@ def send_key(sock: socket.socket, key: bytes):
     packet = length.to_bytes(2) + PacketType.PUBKEY_SHARE.byte() + key
     sock.send(packet)
 
-def read_stdin(connection: socket.socket):
+def read_stdin(connection: socket.socket, remotePublicKey: bytes):
     while True:
         msg = input().strip()
-        send_message(connection, msg)
+        send_message(connection, msg, remotePublicKey)
 
 def listen_for_peers():
     HOST_IP = get_ip()
 
     serverSocket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
     serverSocket.bind((HOST_IP, HOST_PORT))
-    serverSocket.listen() # become a server socket, maximum 5 connections
+    serverSocket.listen(0) # become a server socket, only one connection allowed (no backlog).
     print(f"Listening for incoming connections on local network at {HOST_IP}:{HOST_PORT}")
 
     connection, address = serverSocket.accept()
@@ -88,23 +78,28 @@ def start_communicating(connection: socket.socket):
 
     send_key(connection, hostPublicKey.to_bytes(KEY_SIZE))
 
-    threading.Thread(target=read_stdin, args=[connection]).start()
+    key_received = False
 
     while True:
-        header = connection.recv(3)
-        if len(header) == 0:
-            print("Connection closed.")
+        try:
+            header = connection.recv(3)
+            if len(header) == 0:
+                print("Connection closed.")
+                os._exit(0)
+            assert len(header) == 3
+            content_size = int.from_bytes(header[0:2])
+            packet_type = int.from_bytes(header[2:3])
+            content = connection.recv(content_size)
+            assert len(content) == content_size
+        except AssertionError:
+            print("Error: received incomplete or malformed packet. Exiting.")
             os._exit(0)
-        assert len(header) == 3
-        content_size = int.from_bytes(header[0:2])
-        packet_type = int.from_bytes(header[2:3])
-        content = connection.recv(content_size)
-        assert len(content) == content_size
-
-        if packet_type == PacketType.MESSAGE.value:
-            receive_message(content)
-        elif packet_type == PacketType.PUBKEY_SHARE.value:
-            receive_key(content)
+        else:
+            if packet_type == PacketType.MESSAGE.value:
+                receive_message(content)
+            elif packet_type == PacketType.PUBKEY_SHARE.value and not key_received:
+                receive_key(content, connection)
+                key_received = True
 
 def receive_message(packetContent: bytes):
     c1 = int.from_bytes(packetContent[0:KEY_SIZE])
@@ -113,11 +108,12 @@ def receive_message(packetContent: bytes):
     msg = numberToText(msgNumber, KEY_SIZE)
     print("Message received:", msg)
 
-def receive_key(packetContent: bytes):
-    global remotePublicKey, remoteKeySize
+def receive_key(packetContent: bytes, connection: socket.socket):
     remoteKeySize = len(packetContent)
-    remotePublicKey = int.from_bytes(packetContent)
+    remotePublicKey = packetContent
     print(f"Received public key from peer. Key size: {remoteKeySize}B.")
+    print("You can now send messages to the peer.")
+    threading.Thread(target=read_stdin, args=(connection, remotePublicKey)).start()
 
 def sigint_handler(_sig, _frame):
     print("Exiting.")
