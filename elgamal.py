@@ -1,7 +1,7 @@
 import random
 import base64
-import sys
-sys.setrecursionlimit(10000)
+# import sys
+# sys.setrecursionlimit(10000)
 
 # KEY_SIZE = 1024
 
@@ -20,8 +20,8 @@ def numberToText(number: int, keySize):
 def exponentiationModulaireIterative(n: int, k: int, module: int) -> int:
     if k == 0:
         return 1
-    
-    acc = 1    
+
+    acc = 1
     while k > 1:
         if k & 1 == 1:
             acc = (acc * n) % module
@@ -58,7 +58,7 @@ def exponentiationModulaireRecursiveBuggée(n: int, k: int, module: int, depth =
 def generateKeyPair(keySize: int):
     module = 2**(8 * keySize)
     x = random.randint(1, module - 1)
-    h = exponentiationModulaire(3, x, module)
+    h = exponentiationModulaire(GENERATOR, x, module)
     publicKey = h
     privateKey = x
     return publicKey, privateKey
@@ -95,4 +95,4 @@ def readKeyFromFile(filename: str, keySize: int):
         keyBytes = base64.b64decode(keyString)
         assert len(keyBytes) == keySize and "Key size in file does not match expected size"
         return int.from_bytes(keyBytes)
-        
+
