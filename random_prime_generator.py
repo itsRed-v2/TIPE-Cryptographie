@@ -22,5 +22,39 @@ def generation(KeySize):
         a=randint(1,KeySize)
     return a
 
-def Euclide_Etendu():
-    pass
+def Euclide_Etendu(a,b):
+    u = 1
+    v = 0
+    r = a
+    u2 = 1
+    v2 = 0
+    r2 = b
+    while r2!=0:
+        q=r%r2
+        u,v,r,u2,v2,r2=u2,v2,r2,u-(q*u2),v-(q*v2),r-(q*r2)
+    return r,u,v
+
+""" def Euclide_etendu_recursif(a, b):
+    a, b = max(a, b), min(a, b)
+    L=[]
+    while b != 1:
+        q = a // b
+        r = a % b
+        a = b
+        b = r
+        L.append((a,b,q,r)) """
+
+def Euclide_etendu_recursif(a,b):
+    """
+    Contrat: a et b doivent être premiers entre eux et a > b
+    Retourne: les coefficients de bezout associés à a et b
+    """
+    q = a//b
+    r = a % b
+    if r == 1:
+        return 1, -q
+    u,v = Euclide_etendu_recursif(b,r)
+
+    return v, -q*v + u
+
+print(Euclide_etendu_recursif(37,52))
