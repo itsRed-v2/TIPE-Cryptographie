@@ -1,5 +1,5 @@
 from elgamal import generateKeyPair, textToNumber, encrypt, decrypt, numberToText
-from rsa import readPrivateKey, readPublicKey, chiffrementRSA, déchiffrementRSA
+from RSA import readPrivateKey, readPublicKey, chiffrementRSA, déchiffrementRSA
 import base64
 
 def printb64(msg: str, key: int, keySize: int):

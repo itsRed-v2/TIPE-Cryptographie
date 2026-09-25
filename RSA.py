@@ -3,13 +3,13 @@ import base64
 
 e = 65537
 
-def chiffrementRSA(msg,PublicKey,Ksize):
+def chiffrementRSA(msg: str, PublicKey: tuple[int,int], Ksize: int):
     e,n = PublicKey
     M=textToNumber(msg,Ksize-1)
     C=exponentiationModulaire(M,e,n)
     return C
 
-def déchiffrementRSA(chiffré,PrivateKey,Ksize):
+def déchiffrementRSA(chiffré: int, PrivateKey: tuple[int,int,int], Ksize: int):
     p,q,d = PrivateKey
     n = p*q
     M=exponentiationModulaire(chiffré,d,n)

@@ -1,6 +1,6 @@
 import socket
 import threading
-from elgamal import encrypt, decrypt, numberToText, textToNumber, readKeyFromFile
+from elgamal import chiffrementElGamal, déchiffrementElGamal, readKeyFromFile
 from enum import Enum
 import sys
 import os
@@ -38,24 +38,6 @@ def get_ip():
     IP = s.getsockname()[0]
     s.close()
     return IP
-
-def send_message(sock: socket.socket, message: str, remotePublicKey: bytes):
-    remoteKeySize = len(remotePublicKey)
-    msgNumber = textToNumber(message, remoteKeySize) # convertion du message en entier pour cryptage
-    c1, c2 = encrypt(msgNumber, int.from_bytes(remotePublicKey), remoteKeySize)
-    content = c1.to_bytes(remoteKeySize) + c2.to_bytes(remoteKeySize)
-    length = len(content)
-    # Création du paquet par concaténation de bytes
-    # (2 bytes pour la longueur, 1 byte pour le type de packet, puis le contenu)
-    packet = length.to_bytes(2) + PacketType.MESSAGE.byte() + content
-    sock.send(packet)
-
-def send_key(sock: socket.socket, key: bytes):
-    length = len(key)
-    # Création du paquet par concaténation de bytes
-    # (2 bytes pour la longueur, 1 byte pour le type de packet, puis le contenu)
-    packet = length.to_bytes(2) + PacketType.PUBKEY_SHARE.byte() + key
-    sock.send(packet)
 
 # Cette fonction, executée dans un thread parallèle, envoie les messages écrits
 # par l'utilisateur.
@@ -129,13 +111,27 @@ def start_communicating(connection: socket.socket):
                 # sinon deux treads seraient créés qui écouteraient stdin simultanément
                 key_received = True
 
+# Crypte et envoie un message
+def send_message(sock: socket.socket, message: str, remotePublicKey: bytes):
+    remoteKeySize = len(remotePublicKey)
+    content = chiffrementElGamal(message, int.from_bytes(remotePublicKey), remoteKeySize)
+    length = len(content)
+    # Création du paquet par concaténation de bytes
+    # (2 bytes pour la longueur, 1 byte pour le type de packet, puis le contenu)
+    packet = length.to_bytes(2) + PacketType.MESSAGE.byte() + content
+    sock.send(packet)
+
 # Décrypte et affiche un message reçu.
 def receive_message(packetContent: bytes):
-    c1 = int.from_bytes(packetContent[0:KEY_SIZE])
-    c2 = int.from_bytes(packetContent[KEY_SIZE:2*KEY_SIZE])
-    msgNumber = decrypt((c1, c2), hostPrivateKey, KEY_SIZE)
-    msg = numberToText(msgNumber, KEY_SIZE)
+    msg = déchiffrementElGamal(packetContent, hostPrivateKey, KEY_SIZE)
     print("Message received:", msg)
+
+def send_key(sock: socket.socket, key: bytes):
+    length = len(key)
+    # Création du paquet par concaténation de bytes
+    # (2 bytes pour la longueur, 1 byte pour le type de packet, puis le contenu)
+    packet = length.to_bytes(2) + PacketType.PUBKEY_SHARE.byte() + key
+    sock.send(packet)
 
 def receive_key(packetContent: bytes, connection: socket.socket):
     remoteKeySize = len(packetContent)

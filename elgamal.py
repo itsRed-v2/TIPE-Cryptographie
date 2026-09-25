@@ -84,6 +84,18 @@ def decrypt(ciphertext: tuple[int, int], privateKey: int, keySize: int):
     message = (c2 * sInv) % module
     return message
 
+def chiffrementElGamal(msg: str, publicKey: int, keySize: int):
+    msgNumber = textToNumber(msg, keySize)
+    c1, c2 = encrypt(msgNumber, publicKey, keySize)
+    cyphertext = c1.to_bytes(keySize) + c2.to_bytes(keySize)
+    return cyphertext
+
+def déchiffrementElGamal(cyphertext: bytes, privateKey: int, keySize: int):
+    c1 = int.from_bytes(cyphertext[0:keySize])
+    c2 = int.from_bytes(cyphertext[keySize:2*keySize])
+    msgNumber = decrypt((c1, c2), privateKey, keySize)
+    return numberToText(msgNumber, keySize)
+
 def writeKeyToFile(key: int, filename: str, keySize: int):
     with open(filename, 'w') as file:
         keyString = base64.b64encode(key.to_bytes(keySize)).decode('ascii')
