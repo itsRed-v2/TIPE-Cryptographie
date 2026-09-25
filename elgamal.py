@@ -1,7 +1,7 @@
 import random
 import base64
-# import sys
-# sys.setrecursionlimit(10000)
+import sys
+sys.setrecursionlimit(10000)
 
 # KEY_SIZE = 1024
 
