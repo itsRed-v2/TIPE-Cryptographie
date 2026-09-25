@@ -6,7 +6,8 @@ import random
 
 def measure(nom: str, func):
     start = time.time()
-    func()
+    for i in range(1):
+        func()
     end = time.time()
     elapsed = end - start
     print(f"'{nom}': {elapsed:.6f}")
@@ -44,21 +45,34 @@ def generateOperationsPlot():
     times2 = []
     times3 = []
     times4 = []
-    for keySize in range(16, 2048, 16):
+    sim1 = []
+    sim2 = []
+    sim3 = []
+    maxKeySize = 2*2048
+    for keySize in range(16, maxKeySize, 16):
         module = 2**(8 * keySize)
         x = random.randint(1, module - 1)
-        x2 = x*x
+        y = random.randint(1, module - 1)
+        xy = x * y
 
         sizes.append(keySize)
-        times1.append(measure(f"mult {keySize}", lambda: x * x) * 1000)
-        times2.append(measure(f"mult {keySize}", lambda: x * (x+1)) * 1000)
-        times3.append(measure(f"mult {keySize}", lambda: x * (x-1)) * 1000)
-        times4.append(measure(f"mult {keySize}", lambda: x2 % module) * 1000)
+        # times1.append(measure(f"mult {keySize}", lambda: x * x) * 1000)
+        times2.append(measure(f"mult {keySize}", lambda: x * y) * 1000)
+        # times3.append(measure(f"mult {keySize}", lambda: (x * y) % module) * 1000)
+        times4.append(measure(f"mult {keySize}", lambda: xy % module) * 1000)
+        sim1.append(keySize*keySize / maxKeySize**2)
+        # sim2.append(times3[-1] / times2[-1])
+        sim3.append(3*keySize**2 / maxKeySize**2)
 
-    axs[1].plot(sizes, times1, "+", label = "x * x")
-    axs[1].plot(sizes, times2, "+", label = "x * (x+1)")
-    axs[1].plot(sizes, times3, "+", label = "x * (x-1)")
-    axs[1].plot(sizes, times4, "+", label = "x² % n")
+
+    # axs[1].plot(sizes, times1, "+", label = "x * x")
+    axs[1].plot(sizes, times2, "+", label = "x * y")
+    # axs[1].plot(sizes, times3, "+", label = "x * y % n")
+    axs[1].plot(sizes, times4, "+", label = "xy % n")
+    axs[1].plot(sizes, sim1, "-", label = "k²")
+    axs[1].plot(sizes, sim3, "-", label = "k^1.58")
+    # axs[1].plot(sizes, sim2, "--", label = "rapport")
+    axs[1].plot((262,262),(0, 0.500), "-b")
     axs[1].set_xlabel("taille de l'entier x (bytes)")
     axs[1].set_ylabel("temps (ms)")
     axs[1].legend()
