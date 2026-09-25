@@ -5,6 +5,7 @@ def fermat(n):
         return True
     else:
         return False
+    
 def premier_test(p):
     c = 0
     for i in range(1, 100*p):
@@ -16,10 +17,10 @@ def premier_test(p):
             print(i // 100, "%")
     return "premier", c
 
-def generation(KeySize):
-    a=randint(1,KeySize)
+def generation(valeurMax):
+    a=randint(2,valeurMax)
     while fermat(a) == False:
-        a=randint(1,KeySize)
+        a=randint(2, valeurMax)
     return a
 
 def Euclide_Etendu(a,b):
@@ -49,6 +50,9 @@ def Euclide_etendu_recursif(a,b):
     Contrat: a et b doivent être premiers entre eux et a > b
     Retourne: les coefficients de bezout associés à a et b
     """
+    if a <= b:
+        print("Il faut a > b")
+        exit()
     q = a//b
     r = a % b
     if r == 1:
@@ -57,4 +61,3 @@ def Euclide_etendu_recursif(a,b):
 
     return v, -q*v + u
 
-print(Euclide_etendu_recursif(37,52))
