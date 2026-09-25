@@ -10,9 +10,11 @@ GENERATOR = 3
 def textToNumber(text: str, keySize: int):
     buffer = text.encode('utf-8')
     if len(buffer) > keySize:
-        print("Text is too long to be converted")
-        exit(1)
-    return int.from_bytes(buffer)
+        raise ValueError("Text is too long to be converted")
+    number = int.from_bytes(buffer)
+    if number == 0:
+        raise ValueError("Cannot convert empty / null message to number")
+    return number
 
 def numberToText(number: int, keySize):
     return number.to_bytes(keySize).decode('utf-8')
@@ -63,7 +65,7 @@ def generateKeyPair(keySize: int):
     privateKey = x
     return publicKey, privateKey
 
-# message: entier dans [0, MODULE[
+# message: entier dans [1, MODULE[
 def encrypt(message: int, publicKey: int, keySize: int) -> tuple[int, int]:
     module = 2**(8 * keySize)
 

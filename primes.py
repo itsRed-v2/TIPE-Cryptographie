@@ -1,29 +1,31 @@
 from random import randint
 from elgamal import exponentiationModulaire
-def fermat(n):
+
+def testPrimalitéFermat(n):
     if exponentiationModulaire(2,n-1,n)==1:
         return True
     else:
         return False
 
-def premier_test(p):
-    c = 0
-    for i in range(1, 100*p):
-        a=randint(1,2**(8*256) - 1)
-        if fermat(a):
-            c += 1
-            print("Nombre premier numéro:", c, ":", a)
-        if i % p == 0:
-            print(i // 100, "%")
-    return "premier", c
+# def genere_nombre(amount):
+#     c = 0
+#     for i in range(1, 100*amount):
+#         a=randint(1,2**(8*256) - 1)
+#         if testPrimalitéFermat(a):
+#             c += 1
+#             print("Nombre premier numéro:", c, ":", a)
+#         if i % amount == 0:
+#             print(i // amount, "%")
+#     return "premier", c
 
-def generation(valeurMax):
+def genere_nb_premier(valeurMax):
     a=randint(2,valeurMax)
-    while fermat(a) == False:
+    while testPrimalitéFermat(a) == False:
         a=randint(2, valeurMax)
+    print("Fermat a attrapé un nombre premier sauvage !!")
     return a
 
-def Euclide_Etendu_Iteratif(a,b):
+def euclide_etendu_iteratif(a,b):
     """
     Contrat: a et b doivent être premiers entre eux et a > b
     Retourne: les coefficients de bezout associés à a et b
@@ -51,7 +53,7 @@ def Euclide_Etendu_Iteratif(a,b):
 
     return signe * u, -signe * v
 
-def Euclide_etendu_recursif(a,b):
+def euclide_etendu_recursif(a,b):
     """
     Contrat: a et b doivent être premiers entre eux et a > b
     Retourne: les coefficients de bezout associés à a et b
@@ -64,7 +66,7 @@ def Euclide_etendu_recursif(a,b):
         return 1, -q
     elif r == 0:
         raise ValueError("Euclide étendu: a et b ne sont pas premiers entre eux")
-    u,v = Euclide_etendu_recursif(b,r)
+    u,v = euclide_etendu_recursif(b,r)
 
     return v, -q*v + u
 
