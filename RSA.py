@@ -18,16 +18,15 @@ def dechiffrementRSA(chiffré: int, PrivateKey: tuple[int,int,int], Ksize: int):
 
 def dechiffrementTRC(chiffré: int, PrivateKey: tuple[int,int,int], Ksize: int):
     p,q,d= PrivateKey
-    d_p = d % p - 1
-    d_q = d % q - 1
+    d_p = d % (p - 1)
+    d_q = d % (q - 1)
     m_p = exponentiationModulaire(chiffré,d_p,p)
     m_q = exponentiationModulaire(chiffré,d_q,q)
     if q > p:
-        _,invp = euclide_etendu_iteratif(q,p)
+        invq,_ = euclide_etendu_iteratif(q,p)
     else:
-        invp,_ = euclide_etendu_iteratif(p,q)
-    m = ((m_p - m_q) * invp) % q
-    m = m_p + p * m
+        _,invq = euclide_etendu_iteratif(p,q)
+    m= m_q + q *(((m_p-m_q)*invq)%p)
     return numberToText(m,Ksize-1)
 
 #############################
