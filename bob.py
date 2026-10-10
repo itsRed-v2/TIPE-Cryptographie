@@ -1,5 +1,5 @@
 from elgamal import generateKeyPair, textToNumber, encrypt, decrypt, numberToText
-from RSA import readPrivateKey, readPublicKey, chiffrementRSA, déchiffrementRSA
+from RSA import dechiffrementTRC, readPrivateKey, readPublicKey, chiffrementRSA, dechiffrementRSA
 import base64
 
 def printb64(msg: str, key: int, keySize: int):
@@ -27,6 +27,7 @@ def bobRSA():
 
     chiffré=chiffrementRSA("Hello tout le monde",PublicKey,Ksize)
     print(chiffré)
-    print(déchiffrementRSA(chiffré,PrivateKey,Ksize))
+    print("dechiffrement classique:", dechiffrementRSA(chiffré,PrivateKey,Ksize))
+    print("dechiffrement TRC:", dechiffrementTRC(chiffré,PrivateKey,Ksize))
 
 bobRSA()

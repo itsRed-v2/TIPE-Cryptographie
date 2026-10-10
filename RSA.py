@@ -1,4 +1,5 @@
 from elgamal import exponentiationModulaire,textToNumber,numberToText
+from primes import euclide_etendu_iteratif
 import base64
 
 e = 65537
@@ -9,11 +10,25 @@ def chiffrementRSA(msg: str, PublicKey: tuple[int,int], Ksize: int):
     C=exponentiationModulaire(M,e,n)
     return C
 
-def déchiffrementRSA(chiffré: int, PrivateKey: tuple[int,int,int], Ksize: int):
+def dechiffrementRSA(chiffré: int, PrivateKey: tuple[int,int,int], Ksize: int):
     p,q,d = PrivateKey
     n = p*q
     M=exponentiationModulaire(chiffré,d,n)
     return numberToText(M,Ksize - 1)
+
+def dechiffrementTRC(chiffré: int, PrivateKey: tuple[int,int,int], Ksize: int):
+    p,q,d= PrivateKey
+    d_p = d % p - 1
+    d_q = d % q - 1
+    m_p = exponentiationModulaire(chiffré,d_p,p)
+    m_q = exponentiationModulaire(chiffré,d_q,q)
+    if q > p:
+        _,invp = euclide_etendu_iteratif(q,p)
+    else:
+        invp,_ = euclide_etendu_iteratif(p,q)
+    m = ((m_p - m_q) * invp) % q
+    m = m_p + p * m
+    return numberToText(m,Ksize-1)
 
 #############################
 # MANIPULATION DES FICHIERS #

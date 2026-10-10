@@ -1,5 +1,5 @@
 from primes import genere_nb_premier, euclide_etendu_recursif
-from rsa import writePublicKey, writePrivateKey
+from RSA import writePublicKey, writePrivateKey
 
 Ksize = 256
 e=65537
