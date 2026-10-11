@@ -1,6 +1,7 @@
 import socket
 import threading
-from elgamal import chiffrementElGamal, déchiffrementElGamal, readKeyFromFile
+from RSA import chiffrementRSA, dechiffrementRSA, readRsaPrivateKey, readRsaPublicKey
+from elgamal import chiffrementElGamal, déchiffrementElGamal, readEgKeyFromFile
 from enum import Enum
 import sys
 import os
@@ -13,8 +14,10 @@ import signal
 HOST_PORT = 6008
 KEY_SIZE = 256
 
-hostPrivateKey = readKeyFromFile("hostPrivate.key", KEY_SIZE)
-hostPublicKey = readKeyFromFile("hostPublic.key", KEY_SIZE)
+rsaPrivateKeyFile = "RSAprivate.key"
+rsaPublicKeyFile = "RSApublic.key"
+egPrivateKeyFile = "egPrivate.key"
+egPublicKeyFile = "egPublic.key"
 
 # =====================================
 # === CLASS AND FUNCTION DEFINITION ===
@@ -25,6 +28,13 @@ hostPublicKey = readKeyFromFile("hostPublic.key", KEY_SIZE)
 class PacketType(Enum):
     MESSAGE = 1
     PUBKEY_SHARE = 2
+
+    def byte(self):
+        return self.value.to_bytes(1)
+
+class KeyType(Enum):
+    ELGAMAL = 1
+    RSA = 2
 
     def byte(self):
         return self.value.to_bytes(1)
@@ -65,7 +75,7 @@ def listen_for_peers():
 # Cette fonction sert à se connecter à un ordinateur qui a créé un serveur
 # avec listen_for_peers
 def connect_to_peer(ip: str, port: int):
-    connection = socket.create_connection((ip, port))
+    connection = socket.create_connection((ip, port),timeout=1)
     print(f"Created connection with peer {ip}:{port}")
     start_communicating(connection)
 
@@ -76,8 +86,8 @@ def start_communicating(connection: socket.socket):
     # l'execution est en pause tant qu'aucun message n'est recu
     connection.setblocking(True)
 
-    # On envoie sa clé publique à la paire pour qu'elle puisse nous envoyer des messages.
-    send_key(connection, hostPublicKey.to_bytes(KEY_SIZE))
+    # On envoie notre clé publique à la paire pour qu'elle puisse nous envoyer des messages.
+    send_key(connection, publicKey, protocol)
 
     key_received = False
 
@@ -114,7 +124,10 @@ def start_communicating(connection: socket.socket):
 # Crypte et envoie un message
 def send_message(sock: socket.socket, message: str, remotePublicKey: bytes):
     remoteKeySize = len(remotePublicKey)
-    content = chiffrementElGamal(message, int.from_bytes(remotePublicKey), remoteKeySize)
+    if protocol == KeyType.ELGAMAL:
+        content = chiffrementElGamal(message, remotePublicKey, remoteKeySize)
+    else:
+        content = chiffrementRSA(message, remotePublicKey, remoteKeySize)
     length = len(content)
     # Création du paquet par concaténation de bytes
     # (2 bytes pour la longueur, 1 byte pour le type de packet, puis le contenu)
@@ -123,21 +136,35 @@ def send_message(sock: socket.socket, message: str, remotePublicKey: bytes):
 
 # Décrypte et affiche un message reçu.
 def receive_message(packetContent: bytes):
-    msg = déchiffrementElGamal(packetContent, hostPrivateKey, KEY_SIZE)
+    if protocol == KeyType.ELGAMAL:
+        msg = déchiffrementElGamal(packetContent, privateKey, KEY_SIZE)
+    else:
+        msg = dechiffrementRSA(packetContent, privateKey, KEY_SIZE)
     print("Message received:", msg)
 
-def send_key(sock: socket.socket, key: bytes):
-    length = len(key)
+def send_key(sock: socket.socket, key: bytes, keyType: KeyType):
+    length = 1 + len(key)
     # Création du paquet par concaténation de bytes
     # (2 bytes pour la longueur, 1 byte pour le type de packet, puis le contenu)
-    packet = length.to_bytes(2) + PacketType.PUBKEY_SHARE.byte() + key
+    packet = length.to_bytes(2) \
+            + PacketType.PUBKEY_SHARE.byte() \
+            + keyType.byte() \
+            + key
     sock.send(packet)
 
 def receive_key(packetContent: bytes, connection: socket.socket):
-    remoteKeySize = len(packetContent)
-    remotePublicKey = packetContent
+    # Premier byte: type de clé (RSA = 1, ELGAMAL = 2)
+    keyTypeByte = packetContent[:1]
+    if keyTypeByte != protocol.byte():
+        print("Error: received wrong key type. Exiting.")
+        os._exit(0)
+
+    # 2e byte: la clé
+    remotePublicKey = packetContent[1:]
+    remoteKeySize = len(packetContent) - 1
     print(f"Received public key from peer. Key size: {remoteKeySize}B.")
     print("You can now send messages to the peer.")
+
     # Une fois la clé reçue, on invoque read_stdin dans un thread
     # parallèle pour permettre à l'utilisateur d'écrire des messages.
     threading.Thread(target=read_stdin, args=(connection, remotePublicKey)).start()
@@ -149,8 +176,10 @@ def sigint_handler(_sig, _frame):
 
 def print_help():
     print("Syntax:")
-    print(sys.argv[0], "listen")
-    print(sys.argv[0], "connect ip:port")
+    print(sys.argv[0], "rsa listen")
+    print(sys.argv[0], "rsa connect ip:port")
+    print(sys.argv[0], "elgamal listen")
+    print(sys.argv[0], "elgamal connect ip:port")
 
 # ============
 # === CODE ===
@@ -163,13 +192,27 @@ signal.signal(signal.SIGINT, sigint_handler)
 # si les arguments sont mal formés.
 # sys.argv[1] est le premier argument de ligne de commande
 # sys.argv[2] est le deuxième.
-if len(sys.argv) == 1:
+if len(sys.argv) <= 2:
     print_help()
-elif sys.argv[1] == "listen":
+    exit(1)
+
+if sys.argv[1].lower() == "rsa":
+    protocol = KeyType.RSA
+    privateKey = readRsaPrivateKey(KEY_SIZE,rsaPrivateKeyFile)
+    publicKey = readRsaPublicKey(KEY_SIZE,rsaPublicKeyFile)
+elif sys.argv[1].lower() == "eg" or sys.argv[1].lower() == "elgamal":
+    protocol = KeyType.ELGAMAL
+    privateKey = readEgKeyFromFile(egPrivateKeyFile, KEY_SIZE)
+    publicKey = readEgKeyFromFile(egPublicKeyFile, KEY_SIZE)
+else:
+    print_help()
+    exit(1)
+
+if sys.argv[2] == "listen":
     listen_for_peers()
-elif sys.argv[1] == "connect":
+elif sys.argv[2] == "connect":
     try:
-        addr_str = sys.argv[2]
+        addr_str = sys.argv[3]
         [ip,port] = addr_str.split(":")
         port = int(port)
     except:

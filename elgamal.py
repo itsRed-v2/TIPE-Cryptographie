@@ -63,7 +63,7 @@ def generateKeyPair(keySize: int):
     h = exponentiationModulaire(GENERATOR, x, module)
     publicKey = h
     privateKey = x
-    return publicKey, privateKey
+    return publicKey.to_bytes(keySize), privateKey.to_bytes(keySize)
 
 # message: entier dans [1, MODULE[
 def encrypt(message: int, publicKey: int, keySize: int) -> tuple[int, int]:
@@ -84,29 +84,31 @@ def decrypt(ciphertext: tuple[int, int], privateKey: int, keySize: int):
     message = (c2 * sInv) % module
     return message
 
-def chiffrementElGamal(msg: str, publicKey: int, keySize: int):
+def chiffrementElGamal(msg: str, publicKey: bytes, keySize: int):
+    assert len(publicKey) == keySize
     msgNumber = textToNumber(msg, keySize)
-    c1, c2 = encrypt(msgNumber, publicKey, keySize)
+    c1, c2 = encrypt(msgNumber, int.from_bytes(publicKey), keySize)
     cyphertext = c1.to_bytes(keySize) + c2.to_bytes(keySize)
     return cyphertext
 
-def déchiffrementElGamal(cyphertext: bytes, privateKey: int, keySize: int):
+def déchiffrementElGamal(cyphertext: bytes, privateKey: bytes, keySize: int):
+    assert len(privateKey) == keySize
     c1 = int.from_bytes(cyphertext[0:keySize])
     c2 = int.from_bytes(cyphertext[keySize:2*keySize])
-    msgNumber = decrypt((c1, c2), privateKey, keySize)
+    msgNumber = decrypt((c1, c2), int.from_bytes(privateKey), keySize)
     return numberToText(msgNumber, keySize)
 
-def writeKeyToFile(key: int, filename: str, keySize: int):
+def writeEgKeyToFile(key: bytes, filename: str):
     with open(filename, 'w') as file:
-        keyString = base64.b64encode(key.to_bytes(keySize)).decode('ascii')
+        keyString = base64.b64encode(key).decode('ascii')
         lines = [keyString[i:i+64] for i in range(0, len(keyString), 64)]
         file.write("\n".join(lines))
 
-def readKeyFromFile(filename: str, keySize: int):
+def readEgKeyFromFile(filename: str, keySize: int):
     with open(filename, 'r') as file:
         lines = [l.strip() for l in file.readlines()]
         keyString = "".join(lines)
         keyBytes = base64.b64decode(keyString)
         assert len(keyBytes) == keySize and "Key size in file does not match expected size"
-        return int.from_bytes(keyBytes)
+        return keyBytes
 

@@ -1,10 +1,9 @@
 from primes import genere_nb_premier, euclide_etendu_recursif
-from RSA import writePublicKey, writePrivateKey
+from RSA import rsaPrivateKeyToBytes, rsaPublicKeyToBytes, writeRsaKey, e
 
 Ksize = 256
-e=65537
 
-def generateKeyPair(KeySize): 
+def generateKeyPair(KeySize):
     valeurMax = 2**(4*KeySize) - 1
     p, q = genere_nb_premier(valeurMax), genere_nb_premier(valeurMax)
     n=p*q
@@ -14,16 +13,12 @@ def generateKeyPair(KeySize):
     _,d=euclide_etendu_recursif(phi,e)
     if d < 0:
         d += phi
-    return (e,n),(p,q,d)
+    return rsaPublicKeyToBytes(KeySize, (e,n)), rsaPrivateKeyToBytes(KeySize, (p,q,d))
 
 public,private = generateKeyPair(Ksize)
 
-print("public", public)
-print("private", private)
-print((public[1].bit_length() + 7)//8)
-print((private[0].bit_length() + 7)//8)
-print((private[1].bit_length() + 7)//8)
-print((private[2].bit_length() + 7)//8)
+print("public:", public.hex())
+print("private:", private.hex())
 
-writePublicKey(public, Ksize, "RSApublic.key")
-writePrivateKey(private, Ksize, "RSAprivate.key")
+writeRsaKey(public, "RSApublic.key")
+writeRsaKey(private, "RSAprivate.key")

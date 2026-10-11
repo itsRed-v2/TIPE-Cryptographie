@@ -4,16 +4,16 @@ import base64
 
 e = 65537
 
-def chiffrementRSA(msg: str, PublicKey: tuple[int,int], Ksize: int):
-    e,n = PublicKey
+def chiffrementRSA(msg: str, PublicKey: bytes, Ksize: int):
+    e,n = rsaPublicKeyFromBytes(PublicKey,Ksize)
     M=textToNumber(msg,Ksize-1)
     C=exponentiationModulaire(M,e,n)
-    return C
+    return C.to_bytes(Ksize)
 
-def dechiffrementRSA(chiffré: int, PrivateKey: tuple[int,int,int], Ksize: int):
-    p,q,d = PrivateKey
+def dechiffrementRSA(chiffré: bytes, PrivateKey: bytes, Ksize: int):
+    p,q,d = rsaPrivateKeyFromBytes(PrivateKey,Ksize)
     n = p*q
-    M=exponentiationModulaire(chiffré,d,n)
+    M=exponentiationModulaire(int.from_bytes(chiffré),d,n)
     return numberToText(M,Ksize - 1)
 
 def dechiffrementTRC(chiffré: int, PrivateKey: tuple[int,int,int], Ksize: int):
@@ -30,9 +30,9 @@ def dechiffrementTRC(chiffré: int, PrivateKey: tuple[int,int,int], Ksize: int):
     m = m_p + p * m
     return numberToText(m,Ksize-1)
 
-#############################
-# MANIPULATION DES FICHIERS #
-#############################
+#########################
+# MANIPULATION DES CLÉS #
+#########################
 
 def writeBytesToFile(buffer: bytes, filename: str):
     with open(filename, 'w') as file:
@@ -48,22 +48,31 @@ def readBytesFromFile(expectedSize: int, filename: str):
         assert len(buffer) == expectedSize and "Key size in file does not match expected size"
         return buffer
 
-def writePublicKey(key: tuple[int,int], keySize: int, filename: str):
+def writeRsaKey(key: bytes, filename: str):
+    writeBytesToFile(key, filename)
+
+def readRsaPublicKey(keySize: int, filename: str):
+    return readBytesFromFile(keySize, filename)
+
+def readRsaPrivateKey(keySize: int, filename: str):
+    return readBytesFromFile(2*keySize, filename)
+
+def rsaPublicKeyToBytes(keySize: int, key: tuple[int,int]):
     _,n = key
-    writeBytesToFile(n.to_bytes(keySize), filename)
+    return n.to_bytes(keySize)
 
-def writePrivateKey(key: tuple[int,int,int], keySize: int, filename: str):
-    p,q,d = key
-    buffer = p.to_bytes(keySize//2) + q.to_bytes(keySize//2) + d.to_bytes(keySize)
-    writeBytesToFile(buffer, filename)
-
-def readPublicKey(keySize: int, filename: str):
-    buffer = readBytesFromFile(keySize, filename)
+def rsaPublicKeyFromBytes(buffer: bytes, keySize: int):
+    assert len(buffer) == keySize
     return (e,int.from_bytes(buffer))
 
-def readPrivateKey(keySize: int, filename: str):
-    buffer = readBytesFromFile(2*keySize, filename)
+def rsaPrivateKeyToBytes(keySize: int, key: tuple[int,int,int]):
+    p,q,d = key
+    return p.to_bytes(keySize//2) + q.to_bytes(keySize//2) + d.to_bytes(keySize)
+
+def rsaPrivateKeyFromBytes(buffer: bytes, keySize: int):
+    assert len(buffer) == 2*keySize
     p = int.from_bytes(buffer[0:keySize//2])
     q = int.from_bytes(buffer[keySize//2:keySize])
     d = int.from_bytes(buffer[keySize:2*keySize])
     return (p,q,d)
+
