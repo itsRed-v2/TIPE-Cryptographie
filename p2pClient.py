@@ -54,7 +54,8 @@ def get_ip():
 def read_stdin(connection: socket.socket, remotePublicKey: bytes):
     while True:
         msg = input().strip()
-        send_message(connection, msg, remotePublicKey)
+        if len(msg) != 0:
+            send_message(connection, msg, remotePublicKey)
 
 # Cette fonction crée un serveur qui va réceptionner une éventuelle connection
 # de la part d'un ordinateur qui veut communiquer.
