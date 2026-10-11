@@ -1,6 +1,6 @@
 import socket
 import threading
-from RSA import chiffrementRSA, dechiffrementRSA, readRsaPrivateKey, readRsaPublicKey
+from RSA import chiffrementRSA, dechiffrementTRC, readRsaPrivateKey, readRsaPublicKey
 from elgamal import chiffrementElGamal, déchiffrementElGamal, readEgKeyFromFile
 from enum import Enum
 import sys
@@ -139,7 +139,7 @@ def receive_message(packetContent: bytes):
     if protocol == KeyType.ELGAMAL:
         msg = déchiffrementElGamal(packetContent, privateKey, KEY_SIZE)
     else:
-        msg = dechiffrementRSA(packetContent, privateKey, KEY_SIZE)
+        msg = dechiffrementTRC(packetContent, privateKey, KEY_SIZE)
     print("Message received:", msg)
 
 def send_key(sock: socket.socket, key: bytes, keyType: KeyType):
