@@ -2,10 +2,16 @@ from random import randint
 from elgamal import exponentiationModulaire
 
 def testPrimalitéFermat(n):
-    if exponentiationModulaire(2,n-1,n)==1:
-        return True
-    else:
+    if exponentiationModulaire(2,n-1,n) != 1:
         return False
+
+    for i in range(50):
+        a = randint(3,n-2)
+        r = exponentiationModulaire(a,n-1,n)
+        if r != 1:
+            print("Fermat a attrapé un menteur !!")
+            return False
+    return True
 
 # def genere_nombre(amount):
 #     c = 0
