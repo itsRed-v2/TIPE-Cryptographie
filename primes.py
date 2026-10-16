@@ -103,7 +103,3 @@ def genere_nb_premierRabin(valeurMax,t):
     print("Rabin a attrapé un nombre premier sauvage !!")
     return a
 
-print(MillerRabin(2821,5))
-print(testPrimalitéFermat(2821))
-
-print(genere_nb_premierRabin(2**(8*256)-1,5))

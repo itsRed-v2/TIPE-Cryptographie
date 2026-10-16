@@ -1,5 +1,6 @@
 from elgamal import generateKeyPair, textToNumber, encrypt, decrypt, numberToText
 from RSA import dechiffrementTRC, readRsaPrivateKey, readRsaPublicKey, chiffrementRSA, dechiffrementRSA
+from primes import MillerRabin, testPrimalitéFermat, genere_nb_premierRabin
 import base64
 
 def printb64(msg: str, key: bytes):
@@ -30,5 +31,12 @@ def bobRSA():
     print("dechiffrement classique:", dechiffrementRSA(chiffré,PrivateKey,Ksize))
     print("dechiffrement TRC:", dechiffrementTRC(chiffré,PrivateKey,Ksize))
 
+def bobMiller():
+    print(MillerRabin(2821,5))
+    print(testPrimalitéFermat(2821))
+
+    print(genere_nb_premierRabin(2**(8*256)-1,5))
+
 # bobEG(256)
-bobRSA()
+# bobRSA()
+bobMiller()
