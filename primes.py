@@ -70,3 +70,34 @@ def euclide_etendu_recursif(a,b):
 
     return v, -q*v + u
 
+def MillerRabin(n,t):
+    r=n-1
+    s=0
+    while r & 1 == 0:
+        s+=1
+        r=r//2
+    for i in range(1,t+1):
+        a=randint(2,n-2)
+        y= exponentiationModulaire(a,r,n)
+        if y!=1 and y!=n-1 :
+            j=1
+            while j<=s-1 and y != n-1:
+                y = (y**2)%n
+                if y==1 :
+                    return False
+                j+=1
+            if y!= n-1:
+                return False
+    return True
+
+def genere_nb_premierRabin(valeurMax,t):
+    a=randint(2,valeurMax)
+    while MillerRabin(a,t) == False:
+        a=randint(2, valeurMax)
+    print("Rabin a attrapé un nombre premier sauvage !!")
+    return a
+
+print(MillerRabin(2821,5))
+print(testPrimalitéFermat(2821))
+
+print(genere_nb_premierRabin(2**(8*256)-1,5))
