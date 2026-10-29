@@ -96,10 +96,40 @@ def MillerRabin(n,t):
                 return False
     return True
 
-def genere_nb_premierRabin(valeurMax,t):
+def genere_nb_premier_rabin(valeurMax,t):
     a=randint(2,valeurMax)
     while MillerRabin(a,t) == False:
         a=randint(2, valeurMax)
     print("Rabin a attrapé un nombre premier sauvage !!")
     return a
+
+FIRST_PRIMES = [2, 3, 5, 7, 11, 13, 17, 19, 23, 29, 31, 37, 41, 43, 47, 53, 59, 61, 67, 71, 73, 79, 83, 89, 97, 101, 103, 107, 109, 113, 127, 131, 137, 139, 149, 151, 157, 163, 167, 173, 179, 181, 191, 193, 197, 199]
+
+def crible(n):
+    for p in FIRST_PRIMES:
+        if n % p == 0:
+            return False
+    return True
+
+def test_primalité(n, t):
+    # Cette ligne n'appelle pas la fonction MillerRabin si
+    # crible(n) retourne False, d'où l'optimisation.
+    return crible(n) and MillerRabin(n, t)
+
+def genere_nb_premier_crible_rabin(valeurMax: int, t: int):
+    s = 0
+    r = 0
+    tot = 0
+    while True:
+        a = randint(1, valeurMax)
+        tot += 1
+
+        if not crible(a):
+            s += 1
+            continue
+        r += 1
+        if MillerRabin(a, t):
+            print("Sieve:", s, "rabin:", r, "tot:", tot, f"{100*s/tot:.0f}%")
+            return a
+
 
