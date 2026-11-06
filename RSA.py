@@ -1,5 +1,5 @@
 from elgamal import exponentiationModulaire,textToNumber,numberToText
-from primes import euclide_etendu_iteratif
+from primes import euclide_etendu_iteratif,genere_nb_premier,euclide_etendu_recursif
 import base64
 
 e = 65537
@@ -29,6 +29,19 @@ def dechiffrementTRC(chiffré: bytes, PrivateKey: bytes, Ksize: int):
         _,invq = euclide_etendu_iteratif(p,q)
     m = m_q + q *(((m_p - m_q) * invq) % p)
     return numberToText(m,Ksize-1)
+
+
+def generateKeyPair(KeySize):
+    valeurMax = 2**(4*KeySize) - 1
+    p, q = genere_nb_premier(valeurMax), genere_nb_premier(valeurMax)
+    n=p*q
+    phi=(p-1)*(q-1)
+    if (phi <= e):
+        raise ValueError("Phi est trop petit")
+    _,d=euclide_etendu_recursif(phi,e)
+    if d < 0:
+        d += phi
+    return rsaPublicKeyToBytes(KeySize, (e,n)), rsaPrivateKeyToBytes(KeySize, (p,q,d))
 
 #########################
 # MANIPULATION DES CLÉS #
