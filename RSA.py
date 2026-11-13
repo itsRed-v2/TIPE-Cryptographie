@@ -1,5 +1,5 @@
 from elgamal import exponentiationModulaire,textToNumber,numberToText
-from primes import euclide_etendu_iteratif,genere_nb_premier,euclide_etendu_recursif
+from primes import euclide_etendu_iteratif,genere_nb_premier,euclide_etendu_recursif,genere_nb_premier_crible_rabin
 import base64
 
 e = 65537
@@ -42,6 +42,19 @@ def generateKeyPair(KeySize):
     if d < 0:
         d += phi
     return rsaPublicKeyToBytes(KeySize, (e,n)), rsaPrivateKeyToBytes(KeySize, (p,q,d))
+
+def generateKeyPair_Rabin(KeySize):
+    valeurMax = 2**(4*KeySize) - 1
+    p, q = genere_nb_premier_crible_rabin(valeurMax,2), genere_nb_premier_crible_rabin(valeurMax,2)
+    n=p*q
+    phi=(p-1)*(q-1)
+    if (phi <= e):
+        raise ValueError("Phi est trop petit")
+    _,d=euclide_etendu_recursif(phi,e)
+    if d < 0:
+        d += phi
+    return rsaPublicKeyToBytes(KeySize, (e,n)), rsaPrivateKeyToBytes(KeySize, (p,q,d))
+
 
 #########################
 # MANIPULATION DES CLÉS #
