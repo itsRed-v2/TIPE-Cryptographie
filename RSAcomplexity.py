@@ -19,7 +19,7 @@ def GenerationPlot():
     for keySize in range(16, 64, 2):
         valeur=0
         for i in range(100):
-            a=times.append(measure(f"Generation de clé de taille {keySize}", lambda: generateKeyPair(valeur)) * 1000)
+            a=measure(f"Generation de clé de taille {keySize}", lambda: generateKeyPair(keySize)) * 1000
             
             valeur+=a
         valeur/=100
