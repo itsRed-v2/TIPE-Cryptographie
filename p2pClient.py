@@ -1,7 +1,7 @@
 import socket
 import threading
-from RSA import chiffrementRSA, dechiffrementTRC, readRsaPrivateKey, readRsaPublicKey
-from elgamal import chiffrementElGamal, déchiffrementElGamal, readEgKeyFromFile
+from functions.RSA import chiffrementRSA, dechiffrementTRC, readRsaPrivateKey, readRsaPublicKey
+from functions.elgamal import chiffrementElGamal, déchiffrementElGamal, readEgKeyFromFile
 from enum import Enum
 import sys
 import os

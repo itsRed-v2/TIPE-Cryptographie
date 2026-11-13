@@ -1,6 +1,5 @@
-from elgamal import exponentiationModulaire,textToNumber,numberToText
-from primes import euclide_etendu_iteratif,genere_nb_premier,euclide_etendu_recursif,genere_nb_premier_crible_rabin
-import base64
+from functions.common import exponentiationModulaire, textToNumber, numberToText, writeBytesToFile, readBytesFromFile
+from functions.primes import euclide_etendu_iteratif, genere_nb_premier, euclide_etendu_recursif, genere_nb_premier_crible_rabin
 
 e = 65537
 
@@ -59,20 +58,6 @@ def generateKeyPair_Rabin(KeySize):
 #########################
 # MANIPULATION DES CLÉS #
 #########################
-
-def writeBytesToFile(buffer: bytes, filename: str):
-    with open(filename, 'w') as file:
-        bytesString = base64.b64encode(buffer).decode('ascii')
-        lines = [bytesString[i:i+64] for i in range(0, len(bytesString), 64)]
-        file.write("\n".join(lines))
-
-def readBytesFromFile(expectedSize: int, filename: str):
-    with open(filename, 'r') as file:
-        lines = [l.strip() for l in file.readlines()]
-        bytesString = "".join(lines)
-        buffer = base64.b64decode(bytesString)
-        assert len(buffer) == expectedSize and "Key size in file does not match expected size"
-        return buffer
 
 def writeRsaKey(key: bytes, filename: str):
     writeBytesToFile(key, filename)

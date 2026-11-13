@@ -1,5 +1,5 @@
 from random import randint
-from elgamal import exponentiationModulaire
+from functions.common import exponentiationModulaire
 
 def testPrimalitéFermat(n):
     if exponentiationModulaire(2,n-1,n) != 1:
@@ -133,4 +133,3 @@ def genere_nb_premier_crible_rabin(valeurMax: int, t: int):
             return a
 
 
-    

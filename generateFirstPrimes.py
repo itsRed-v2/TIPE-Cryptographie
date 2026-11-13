@@ -1,4 +1,4 @@
-from primes import MillerRabin
+from functions.primes import MillerRabin
 
 # Le but de ce script est de générer des nombres pour le crible
 # d'érathosthène. Il ne peut donc pas, par principe, utiliser le

@@ -1,4 +1,4 @@
-from elgamal import exponentiationModulaireIterative, exponentiationModulaireRecursive, \
+from functions.common import exponentiationModulaireIterative, exponentiationModulaireRecursive, \
     exponentiationModulaireRecursiveBuggée
 from matplotlib import pyplot as plt
 import time

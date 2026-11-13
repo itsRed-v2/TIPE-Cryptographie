@@ -1,4 +1,4 @@
-from elgamal import generateKeyPair, writeEgKeyToFile
+from functions.elgamal import generateKeyPair, writeEgKeyToFile
 import base64
 
 KEY_SIZE = 256

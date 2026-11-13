@@ -1,6 +1,7 @@
-from elgamal import generateKeyPair, textToNumber, encrypt, decrypt, numberToText
-from RSA import dechiffrementTRC, readRsaPrivateKey, readRsaPublicKey, chiffrementRSA, dechiffrementRSA
-from primes import MillerRabin, testPrimalitéFermat, genere_nb_premier_rabin
+from functions.elgamal import generateKeyPair, encrypt, decrypt
+from functions.RSA import dechiffrementTRC, readRsaPrivateKey, readRsaPublicKey, chiffrementRSA, dechiffrementRSA
+from functions.primes import MillerRabin, testPrimalitéFermat, genere_nb_premier_rabin
+from functions.common import textToNumber, numberToText
 import base64
 
 def printb64(msg: str, key: bytes):

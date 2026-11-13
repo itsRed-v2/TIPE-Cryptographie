@@ -1,11 +1,11 @@
-from elgamal import exponentiationModulaire
-from primes import genere_nb_premier_crible_rabin, test_primalité
+from functions.elgamal import exponentiationModulaire
+from functions.primes import genere_nb_premier_crible_rabin, test_primalité
 
 def generatePrimeWithLargeDivisor(byteLength: int):
     # m: nombre de bits alloués à r. Une plus grande valeur accélère le calcul
     # tandis que une plus petite valeur diminue le nombre de facteurs dans la
     # décomposition en facteurs premiers de p = 2*r*q+1
-    m = 4
+    m = 8
     # Nombre de bytes pour q: 8*byteLength - m - 1
     # car p = 2*r*q+1 et 2*r est un nombre de m+1 bits au plus (preuve détaillée dans le carnet de TIPE)
     q_max = 2**(8*byteLength - m - 1) - 1

@@ -1,5 +1,5 @@
 import time
-from RSA import generateKeyPair,generateKeyPair_Rabin,chiffrementRSA
+from functions.RSA import generateKeyPair,generateKeyPair_Rabin,chiffrementRSA
 from matplotlib import pyplot as plt
 from math import sqrt 
 

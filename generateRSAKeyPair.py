@@ -1,10 +1,6 @@
-from primes import genere_nb_premier, euclide_etendu_recursif
-from RSA import rsaPrivateKeyToBytes, rsaPublicKeyToBytes, writeRsaKey, e, generateKeyPair
-
+from functions.RSA import writeRsaKey, generateKeyPair
 
 Ksize = 256
-
-
 
 public,private = generateKeyPair(Ksize)
 
