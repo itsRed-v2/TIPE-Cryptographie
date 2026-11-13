@@ -13,13 +13,13 @@ def bobEG(keySize: int):
     printb64("privateKey:", privateKey)
 
     # Encryption (Bob)
-    m = textToNumber("Hello, world !", keySize)
+    m = textToNumber("Hello, world !", keySize-1)
     ciphertext = encrypt(m, int.from_bytes(publicKey), keySize)
     # print("ciphertext:", ciphertext)
 
     # Decryption (Alice)
     message = decrypt(ciphertext, int.from_bytes(privateKey), keySize)
-    print(numberToText(message, keySize))
+    print(numberToText(message, keySize-1))
 
 def bobRSA():
     Ksize = 256
@@ -37,6 +37,6 @@ def bobMiller():
 
     print(genere_nb_premier_rabin(2**(8*256)-1,5))
 
-# bobEG(256)
+bobEG(256)
 # bobRSA()
-bobMiller()
+# bobMiller()

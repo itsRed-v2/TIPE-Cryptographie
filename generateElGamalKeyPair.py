@@ -11,5 +11,7 @@ public, private = generateKeyPair(KEY_SIZE)
 print("public:", base64.b64encode(public).decode('utf-8'))
 print("private:", base64.b64encode(private).decode('utf-8'))
 
+print("public:", int.from_bytes(public).bit_length(), "bits")
+print("private:", int.from_bytes(private).bit_length(), "bits")
 writeEgKeyToFile(public, "egPublic.key")
 writeEgKeyToFile(private, "egPrivate.key")
